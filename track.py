@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 import cv2, math
 import numpy as np
+from pykeyboard import PyKeyboard
 
 class ColourTracker:
   def __init__(self):
@@ -50,6 +51,8 @@ class ColourTracker:
             break
 
   def find_center(self):
+    k = PyKeyboard()
+
     # print self.points[0], self.points[1], self.points[2], self.points[3]
     p0 = self.points[0]
     p1 = self.points[1]
@@ -59,14 +62,22 @@ class ColourTracker:
 
     if center[1] > center[0] - 80 and center[1] < -center[0] + 480 + 80 and center[0] < (320 - 60):
       print "L"
+      k.press_key(k.left_key)
     elif center[0] < center[1] + 80 and center[0] > -center[1] + 480 + 80 and center[1] > (240 + 60):
       print "D"
+      k.press_key(k.down_key)
     elif center[0] > center[1] + 80 and center[0] < -center[1] + 480 + 80 and center[1] < (240 - 60):
       print "U"
+      k.press_key(k.up_key)
     elif center[1] < center[0] - 80 and center[1] > -center[0] + 480 + 80 and center[0] > (320 + 60):
       print "R"
+      k.press_key(k.right_key)
     else:
       print "C"
+      k.release_key(k.left_key)
+      k.release_key(k.down_key)
+      k.release_key(k.up_key)
+      k.release_key(k.right_key)
 
     # print center
     # if len(self.past) < 100:
