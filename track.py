@@ -8,7 +8,7 @@ class ColourTracker:
     cv2.namedWindow("ColourTrackerWindow", cv2.WINDOW_NORMAL)
     cv2.resizeWindow("ColourTrackerWindow", 640, 480)
     self.capture = cv2.VideoCapture(0)
-    self.scale_down = 2
+    self.scale_down = 1
     self.points = ((0, 0), (0, 0), (0, 0), (0, 0))
     self.past = []
 
@@ -56,6 +56,18 @@ class ColourTracker:
     p2 = self.points[2]
     p3 = self.points[3]
     center = [np.mean([p0[0], p1[0], p2[0], p3[0]]), np.mean([p0[1], p1[1], p2[1], p3[1]])]
+
+    if center[1] > center[0] - 80 and center[1] < -center[0] + 480 + 80 and center[0] < (320 - 60):
+      print "L"
+    elif center[0] < center[1] + 80 and center[0] > -center[1] + 480 + 80 and center[1] > (240 + 60):
+      print "D"
+    elif center[0] > center[1] + 80 and center[0] < -center[1] + 480 + 80 and center[1] < (240 - 60):
+      print "U"
+    elif center[1] < center[0] - 80 and center[1] > -center[0] + 480 + 80 and center[0] > (320 + 60):
+      print "R"
+    else:
+      print "C"
+
     # print center
     # if len(self.past) < 100:
     #   self.past += center
