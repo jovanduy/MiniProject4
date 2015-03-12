@@ -49,7 +49,7 @@ class GameModel():
                 self.hearts.append(black_heart)
 
     def is_hit(self, heart, character):
-        if (heart.x in range(int(character.x), int(character.x+14)))and (heart.y in range(int(character.y-48), int(character.y))):
+        if (heart.x in range(int(character.x), int(character.x+14))) and (heart.y in range(int(character.y-48), int(character.y))):
             character.score += heart.points
             return True
         return False
@@ -213,10 +213,10 @@ class Heart(object):
                 self.vx = -150
 
     def update(self, delta_t):
-        self.x += self.vx*delta_t
-        self.y += self.vy*delta_t
         if self.reach_end_screen():
             self.reset()
+        self.x += self.vx*delta_t
+        self.y += self.vy*delta_t
 
 class BlackHeart(Heart):
     def __init__(self):
