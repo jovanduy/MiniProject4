@@ -35,20 +35,37 @@ class GameModel():
         self.width = width
         self.height = height
         self.background = Background(height)
-        self.character = Character(300,200)
+        # put character in middle of screen
+        self.character = Character(width/2 - 15, height/2 - 20)
+        pygame.font.init()
+        self.font = pygame.font.Font('freesansbold.ttf', 80)
         self.hearts = []
-        for i in range(20):
-            if random.randint(0, 20) > 15:
+        for i in range(25):
+            if random.randint(0, 30) < 20:
                 heart = Heart()
                 self.hearts.append(heart)
             else:
                 black_heart = BlackHeart()
+                self.hearts.append(black_heart)
+
+    def is_hit(self, heart, character):
+        if (heart.x in range(int(character.x), int(character.x+14)))and (heart.y in range(int(character.y-48), int(character.y))):
+            character.score += heart.points
+            return True
+        return False
+
+    def display_score(self):
+        self.score = self.font.render(str(self.character.score), False, (0,0,0))
+        self.screen.blit(self.score_surf, (20,70))
 
     def update(self, delta_t, width, height):
         """ Updates the model and its constituent parts """
         self.character.update(delta_t, width, height)
         for heart in self.hearts:
             heart.update(delta_t)
+            if self.is_hit(heart, self.character):
+                heart.reset()
+        self.display_score
 
 class Background():
     def __init__(self, screen_height):
@@ -74,6 +91,7 @@ class Character():
             x, y """
         self.x = x
         self.y = y
+        # velocities
         self.vx = 0
         self.vy = 0
         self.image = pygame.image.load('images/stand.png')
@@ -145,7 +163,7 @@ class Heart(object):
         else:
             self.y = random.randint(50,400)
             self.vy = 0
-            if self.side == 1:
+            if self.side == 2:
                 self.x = 50
                 self.vx = 150
             else:
@@ -169,39 +187,63 @@ class Heart(object):
             if self.y == 10:
                 return True
         elif self.side == 4:
-            if self.y == 10:
+            if self.x == 630:
                 return True
         return False
+
+    def reset(self):
+        self.side = random.randint(1,4)
+        if self.side == 1 or self.side == 3:
+            self.x = random.randint(50,600)
+            self.vx = 0
+            if self.side == 1:
+                self.y = 50
+                self.vy = 150
+            else:
+                self.y = 480 - 10
+                self.vy = -150
+        else:
+            self.y = random.randint(50,400)
+            self.vy = 0
+            if self.side == 2:
+                self.x = 50
+                self.vx = 150
+            else:
+                self.x = 400
+                self.vx = -150
 
     def update(self, delta_t):
         self.x += self.vx*delta_t
         self.y += self.vy*delta_t
         if self.reach_end_screen():
-            self.side = random.randint(1,4)
-            if self.side == 1 or self.side == 3:
-                self.x = random.randint(50,600)
-                self.vx = 0
-                if self.side == 1:
-                    self.y = 50
-                    self.vy = 150
-                else:
-                    self.y = 480 - 10
-                    self.vy = -150
-            else:
-                self.y = random.randint(50,400)
-                self.vy = 0
-                if self.side == 1:
-                    self.x = 50
-                    self.vx = 150
-                else:
-                    self.x = 400
-                    self.vx = -150
+            self.reset()
 
 class BlackHeart(Heart):
     def __init__(self):
-        super(BlackHeart, self).__init__()
+        self.points = -1
+        # randomly choose from which side of the screen the heart starts
+        self.side = random.randint(1,4)
+        if self.side == 1 or self.side == 3:
+            self.x = random.randint(50,600)
+            self.vx = 0
+            if self.side == 1:
+                self.y = 50
+                self.vy = 150
+            else:
+                self.y = 480 - 10
+                self.vy = -150
+        else:
+            self.y = random.randint(50,400)
+            self.vy = 0
+            if self.side == 1:
+                self.x = 50
+                self.vx = 150
+            else:
+                self.x = 400
+                self.vx = -150
         self.image = pygame.image.load('images/black_heart.png')
-        self.point = -1
+        self.image.set_colorkey((255,255,255))
+        self.been_hit = False
 
 class GameView():
     def __init__(self, model, width, height):
