@@ -37,6 +37,8 @@ class GameModel():
         self.background = Background(height)
         self.character = Character(300,200)
         self.hearts = []
+        for i in range(20):
+
 
     def update(self, delta_t, width, height):
         """ Updates the model and its constituent parts """
