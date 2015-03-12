@@ -37,10 +37,9 @@ class GameModel():
         self.background = Background(height)
         # put character in middle of screen
         self.character = Character(width/2 - 15, height/2 - 20)
-        pygame.font.init()
-        self.font = pygame.font.Font('freesansbold.ttf', 80)
+        self.score_text = ScoreText(self.character)
         self.hearts = []
-        for i in range(25):
+        for i in range(20):
             # more pink hearts than black
             if random.randint(0, 30) < 17:
                 heart = Heart()
@@ -50,23 +49,19 @@ class GameModel():
                 self.hearts.append(black_heart)
 
     def is_hit(self, heart, character):
-        if (heart.x in range(int(character.x), int(character.x+14))) and (heart.y in range(int(character.y-48), int(character.y))):
+        if (int(heart.x) in range(int(character.x), int(character.x+14))) and (int(heart.y) in range(int(character.y), int(character.y+48))):
             character.score += heart.points
             return True
         return False
 
-    def display_score(self):
-        self.score = self.font.render(str(self.character.score), False, (0,0,0))
-        self.screen.blit(self.score_surf, (20,70))
-
     def update(self, delta_t, width, height):
         """ Updates the model and its constituent parts """
         self.character.update(delta_t, width, height)
+        self.score_text.update()
         for heart in self.hearts:
             if self.is_hit(heart, self.character):
                 heart.reset()
             heart.update(delta_t)
-        self.display_score
 
 class Background():
     def __init__(self, screen_height):
@@ -249,7 +244,20 @@ class BlackHeart(Heart):
         self.image.set_colorkey((255,255,255))
         self.been_hit = False
 
-class GameView():
+class ScoreText(object):
+    def __init__(self, character):
+        pygame.font.init()
+        self.font = pygame.font.Font('freesansbold.ttf', 80)
+        self.character = character
+        self.score_text = self.font.render(str(self.character.score), 1, (255, 255, 255))
+
+    def update(self):
+        self.score_text = self.font.render(str(self.character.score), 1, (255, 255, 255))
+
+    def draw(self, screen):
+        screen.blit(self.score_text, (40,40))
+
+class GameView(object):
     def __init__(self, model, width, height):
         """ Initialize the view of the Game """
         pygame.init()
@@ -263,12 +271,13 @@ class GameView():
         # light blue background color
         self.screen.fill((68,218,255))
         self.model.background.draw(self.screen)
+        self.model.score_text.draw(self.screen)
         self.model.character.draw(self.screen)
         for heart in self.model.hearts:
             heart.draw(self.screen)
         pygame.display.update()
 
-class Game():
+class Game(object):
     """ The main Game class """
     def __init__(self):
         """ Initialize the Game game.  Use Game.run() to
@@ -282,7 +291,7 @@ class Game():
         last_update = time.time()
         while True:
             if self.model.character.score < 0:
-                print 'Your highest score was: ' + self.model.character.score_max
+                print 'Your highest score was: ' + str(self.model.character.score_max)
                 break
             self.view.draw()
             self.controller.process_events()
