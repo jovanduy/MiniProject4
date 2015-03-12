@@ -41,7 +41,8 @@ class GameModel():
         self.font = pygame.font.Font('freesansbold.ttf', 80)
         self.hearts = []
         for i in range(25):
-            if random.randint(0, 30) < 20:
+            # more pink hearts than black
+            if random.randint(0, 30) < 17:
                 heart = Heart()
                 self.hearts.append(heart)
             else:
@@ -62,9 +63,9 @@ class GameModel():
         """ Updates the model and its constituent parts """
         self.character.update(delta_t, width, height)
         for heart in self.hearts:
-            heart.update(delta_t)
             if self.is_hit(heart, self.character):
                 heart.reset()
+            heart.update(delta_t)
         self.display_score
 
 class Background():
@@ -97,6 +98,7 @@ class Character():
         self.image = pygame.image.load('images/stand.png')
         self.image.set_colorkey((255,255,255))
         self.score = 0
+        self.score_max = self.score
         self.is_dead = False
 
     def draw(self, screen):
@@ -106,6 +108,8 @@ class Character():
     def update(self, delta_t, width, height):
         """ Update the character over time. The character is not
             allowed past the border of hearts """
+        if self.score > self.score_max:
+            self.score_max = self.score
         if self.x + self.vx*delta_t <= 30 or self.x + self.vx*delta_t >= width-80:
             pass
         else:
@@ -178,16 +182,16 @@ class Heart(object):
 
     def reach_end_screen(self):
         if self.side == 1:
-            if self.y == 470:
+            if self.y >= 470:
                 return True
         elif self.side == 2:
-            if self.x == 0:
+            if self.x >= 630:
                 return True
         elif self.side == 3:
-            if self.y == 10:
+            if self.y <= 10:
                 return True
         elif self.side == 4:
-            if self.x == 630:
+            if self.x <= 0:
                 return True
         return False
 
@@ -277,6 +281,9 @@ class Game():
         """ the main runloop... loop until character's score is negative """
         last_update = time.time()
         while True:
+            if self.model.character.score < 0:
+                print 'Your highest score was: ' + self.model.character.score_max
+                break
             self.view.draw()
             self.controller.process_events()
             delta_t = time.time() - last_update
