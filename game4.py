@@ -14,7 +14,7 @@ import time
 
 class DrawableSurface():
     """ A class that wraps a pygame.Surface and a pygame.Rect """
-
+    #Docstrings are good, but generally need to be a bit more in detail
     def __init__(self, surface, rect):
         """ Initialize the drawable surface """
         self.surface = surface
@@ -40,7 +40,8 @@ class GameModel():
         self.score_text = ScoreText(self.character)
         self.hearts = []
         for i in range(20):
-            # more pink hearts than black
+            # more pink hearts than black <--In future comments, make it clear why this happens. I can guess
+            #but it's always good to explain how these numbers are being decided
             if random.randint(0, 30) < 17:
                 heart = Heart()
                 self.hearts.append(heart)
@@ -68,7 +69,7 @@ class Background():
         """ Initializes the border """
         self.image = pygame.image.load('images/full_heart.png')
         self.tiles = []
-        for i in range(100):
+        for i in range(100): #Can put this into a loop, what is the difference in each of these rects? Comments should make this clear
             self.tiles.append(DrawableSurface(self.image, pygame.Rect(i*32, screen_height-32, 32, 32)))
             self.tiles.append(DrawableSurface(self.image, pygame.Rect(i*32, 0, 32, 32)))
             self.tiles.append(DrawableSurface(self.image, pygame.Rect(0, i*32, 32, 32)))
@@ -84,13 +85,14 @@ class Character():
     """ Represents the player in the game """
     def __init__(self,x,y):
         """ Initialize the character at the specified position
-            x, y """
+            x, y """ #This should be a comment, not a docstring
         self.x = x
         self.y = y
         # velocities
         self.vx = 0
         self.vy = 0
-        self.image = pygame.image.load('images/stand.png')
+        #Stick figure is super cute, but makes it hard to determine what makes a "hit"
+        self.image = pygame.image.load('images/stand.png') 
         self.image.set_colorkey((255,255,255))
         self.score = 0
         self.score_max = self.score
@@ -122,7 +124,7 @@ class Character():
         else:
             self.score -= 1
 
-    def move_down(self):
+    def move_down(self): #The next 6 functions should be one "move" function updated by the controller
         """ increases y velocity so the character can move down """
         self.vy += 150
 
@@ -263,7 +265,7 @@ class GameView(object):
         pygame.init()
         # to retrieve width and height use screen.get_size()
         self.screen = pygame.display.set_mode((width, height))
-        # this is used for figuring out where to draw stuff
+        # this is used for figuring out where to draw stuff <--What is "this"? The model?
         self.model = model
 
     def draw(self):
@@ -276,7 +278,58 @@ class GameView(object):
         for heart in self.model.hearts:
             heart.draw(self.screen)
         pygame.display.update()
+        
+class Controller(): #You use a Controller object in the Game class, so you should define Controller class before Game
+    def __init__(self, model):
+        """ initialize the (what the computer thinks is) keyboard input controller """
+        self.model = model
+        self.up_pressed = False
+        self.down_pressed = False
+        self.left_pressed = False
+        self.right_pressed = False
 
+    def process_events(self):
+        """ process an arrow key press """
+        #Use events
+        if event.type == KEYDOWN:
+            if event.key == pygame.K_LEFT:
+                #move left
+            if event.key == pygame.K_RIGHT:
+                #move right
+            if event.key == pygame.K_UP:
+                #move up
+            if event.key == pygame.K_DOWN:
+                #move down
+        
+        """
+        pygame.event.pump()
+        if not(pygame.key.get_pressed()[pygame.K_UP]):
+            self.up_pressed = False
+        elif not(self.up_pressed):
+            self.up_pressed = True
+            self.model.character.move_up() #Again, all the move functions should be a single "move" function
+        if not(pygame.key.get_pressed()[pygame.K_DOWN]):
+            self.down_pressed = False
+        elif not(self.down_pressed):
+            self.down_pressed = True
+            self.model.character.move_down()
+        if not(pygame.key.get_pressed()[pygame.K_LEFT]):
+            self.left_pressed = False
+        elif not(self.left_pressed):
+            self.left_pressed = True
+            self.model.character.move_left()
+        if not(pygame.key.get_pressed()[pygame.K_RIGHT]):
+            self.right_pressed = False
+        elif not(self.right_pressed):
+            self.right_pressed = True
+            self.model.character.move_right()"""
+
+        # if both up and down or left and right are pressed, do not move
+        # vertically or horizontally, respectively
+        if not(self.up_pressed) and not(self.down_pressed):
+            self.model.character.move_nowhere_vertical()
+        if not(self.left_pressed) and not(self.right_pressed):
+            self.model.character.move_nowhere_horizontal()
 class Game(object):
     """ The main Game class """
     def __init__(self):
@@ -294,50 +347,11 @@ class Game(object):
                 print 'Your highest score was: ' + str(self.model.character.score_max)
                 break
             self.view.draw()
-            self.controller.process_events()
+            if event.type == KEYDOWN:
+                self.controller.process_events(event)
             delta_t = time.time() - last_update
             self.model.update(delta_t, 640, 480)
             last_update = time.time()
-
-class Controller():
-    def __init__(self, model):
-        """ initialize the (what the computer thinks is) keyboard input controller """
-        self.model = model
-        self.up_pressed = False
-        self.down_pressed = False
-        self.left_pressed = False
-        self.right_pressed = False
-
-    def process_events(self):
-        """ process an arrow key press """
-        pygame.event.pump()
-        if not(pygame.key.get_pressed()[pygame.K_UP]):
-            self.up_pressed = False
-        elif not(self.up_pressed):
-            self.up_pressed = True
-            self.model.character.move_up()
-        if not(pygame.key.get_pressed()[pygame.K_DOWN]):
-            self.down_pressed = False
-        elif not(self.down_pressed):
-            self.down_pressed = True
-            self.model.character.move_down()
-        if not(pygame.key.get_pressed()[pygame.K_LEFT]):
-            self.left_pressed = False
-        elif not(self.left_pressed):
-            self.left_pressed = True
-            self.model.character.move_left()
-        if not(pygame.key.get_pressed()[pygame.K_RIGHT]):
-            self.right_pressed = False
-        elif not(self.right_pressed):
-            self.right_pressed = True
-            self.model.character.move_right()
-
-        # if both up and down or left and right are pressed, do not move
-        # vertically or horizontally, respectively
-        if not(self.up_pressed) and not(self.down_pressed):
-            self.model.character.move_nowhere_vertical()
-        if not(self.left_pressed) and not(self.right_pressed):
-            self.model.character.move_nowhere_horizontal()
 
 if __name__ == '__main__':
     game = Game()
